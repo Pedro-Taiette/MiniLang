@@ -1,0 +1,1 @@
+"""Tabela léxica da MiniLang: cada classe carrega a própria definição"""

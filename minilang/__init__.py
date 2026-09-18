@@ -1,1 +1,1 @@
-"""Especificacao lexical da MiniLang (Aula 03)"""
+"""Analisador léxico manual da MiniLang"""
