@@ -1,0 +1,1 @@
+"""Especificação da linguagem: alfabeto, tipos de token e tabela léxica"""

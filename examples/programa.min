@@ -1,0 +1,15 @@
+// soma os numeros de 1 ate o limite
+int limite = 007;
+int total = 0;
+int i = 1;
+
+while (i <= limite) {
+    total = total + i;
+    i = i + 1;
+}
+
+if (total >= 10) {
+    print(total);
+} else {
+    print(0);
+}

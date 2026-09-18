@@ -1,0 +1,4 @@
+// exercita os simbolos invalidos e a continuidade da varredura
+int v@lor = 10;
+print(v);
+! @ !=
