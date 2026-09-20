@@ -1,6 +1,7 @@
 """Alfabeto da MiniLang e os conjuntos derivados dele
 
-dev_note: Todos os predicados aceitam a cadeia vazia - é o que `peek()` devolve no fim da entrada - e respondem False para ela
+dev_note: 
+    Todos os predicados aceitam a cadeia vazia - é o que `peek()` devolve no fim da entrada - e respondem False para ela
 """
 
 LETTERS = frozenset(
@@ -21,6 +22,10 @@ LINE_BREAKS = frozenset({CARRIAGE_RETURN, NEWLINE})
 
 # B = {ESP, TAB, CR, NL}
 WHITESPACE_CHARS = frozenset({" ", "\t"}) | LINE_BREAKS
+
+SYMBOLS = frozenset("+-*/=();") | frozenset("<>!{}")
+
+SOURCE_ALPHABET = LETTERS | DIGITS | {UNDERSCORE} | WHITESPACE_CHARS | SYMBOLS
 
 
 def is_letter(symbol: str) -> bool:
@@ -45,3 +50,7 @@ def is_whitespace(symbol: str) -> bool:
 
 def is_line_break(symbol: str) -> bool:
     return symbol in LINE_BREAKS
+
+
+def is_source_symbol(symbol: str) -> bool:
+    return symbol in SOURCE_ALPHABET
