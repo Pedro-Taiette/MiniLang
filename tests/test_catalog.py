@@ -1,8 +1,9 @@
 """Os casos e as interacoes do catalogo (cases.py)"""
 
+from cases import CASES
+from interactions import EXERCISE_10, EXERCISE_11, INTERACTIONS
+
 from minilang.analysis.lexer import Lexer
-from minilang.spec.cases import CASES
-from minilang.spec.interactions import EXERCISE_10, EXERCISE_11, INTERACTIONS
 from minilang.spec.lexical_class import Action
 from minilang.spec.table import LEXICAL_TABLE
 from minilang.spec.tokens import TokenType
