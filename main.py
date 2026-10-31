@@ -6,6 +6,8 @@
 import sys
 
 from minilang.analysis.lexer import Lexer
+from minilang.analysis.parser import Parser
+from minilang.spec.syntax_tree import format_tree
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -30,3 +32,16 @@ else:
 if lexical_diagnostics:
     print("\nAnalise sintatica nao executada: ha erros lexicos")
     sys.exit(1)
+
+program, syntax_diagnostics = Parser(tokens).parse()
+
+print("\nDiagnóstico sintatico:")
+if syntax_diagnostics:
+    for diagnostic in syntax_diagnostics:
+        print(f"  {diagnostic}")
+    sys.exit(1) # pq n tem como prosseguir depois disso
+else:
+    print("  Não houveram erros")
+
+print("\nAST (a arvore binária):")
+print(format_tree(program))
