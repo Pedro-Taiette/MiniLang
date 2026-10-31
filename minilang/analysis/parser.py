@@ -97,9 +97,13 @@ class Parser:
         self.expect(TokenType.SEMICOLON, "';'")
         return Output(value)
 
-    # --- Grupo 6 --- Expressões         (Fase 3 - Pessoa 4)
     def expression(self) -> Expression:
-        pass
+        left = self.term()
+        while self.peek().type in ADDITIVE_OPERATORS:
+            operator = self.advance()
+            right = self.term()
+            left = Binary(operator, left, right)    # Dobra à esquerda: (10 - 3) - 2
+        return left
 
     def term(self) -> Expression:
         left = self.factor()
