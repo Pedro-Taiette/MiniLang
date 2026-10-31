@@ -66,3 +66,11 @@ def parse_expression(source: str) -> str:
 @pytest.mark.parametrize("source, expected", EXPRESSIONS)
 def test_expression(source, expected):
     assert parse_expression(source) == expected
+
+
+def parse(source: str):
+    tokens, lexical = Lexer(source).scan_tokens()
+
+    assert not lexical, f"{source!r} tem erro lexico: {lexical}"
+
+    return Parser(tokens).parse()
