@@ -1,0 +1,4 @@
+// O primeiro erro interrompe a analise: a linha 4 nao chega a ser examinada
+int x;
+print(2 + );
+x = ;

@@ -6,18 +6,42 @@
 import sys
 
 from minilang.analysis.lexer import Lexer
+from minilang.analysis.parser import Parser
+from minilang.spec.syntax_tree import format_tree
 
 sys.stdout.reconfigure(encoding="utf-8")
 
 with open(sys.argv[1], encoding="utf-8", newline="") as file:
     source = file.read()
 
-tokens, diagnostics = Lexer(source).scan_tokens()
+tokens, lexical_diagnostics = Lexer(source).scan_tokens()
 
 print("Tokens:")
 for token in tokens:
     print(f"  {token}")
 
-print("\nDiagnosticos:")
-for diagnostic in diagnostics:
-    print(f"  {diagnostic}")
+print("\nDiagnostico léxico:")
+if lexical_diagnostics:
+    for diagnostic in lexical_diagnostics:
+        print(f"  {diagnostic}")
+else:
+    print("  Não houveram erros")
+
+# a gente prossegue se n tem bugs no diagnóstico léxico
+
+if lexical_diagnostics:
+    print("\nAnalise sintatica nao executada: ha erros lexicos")
+    sys.exit(1)
+
+program, syntax_diagnostics = Parser(tokens).parse()
+
+print("\nDiagnóstico sintatico:")
+if syntax_diagnostics:
+    for diagnostic in syntax_diagnostics:
+        print(f"  {diagnostic}")
+    sys.exit(1) # pq n tem como prosseguir depois disso
+else:
+    print("  Não houveram erros")
+
+print("\nAST (a arvore binária):")
+print(format_tree(program))
