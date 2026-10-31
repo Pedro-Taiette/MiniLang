@@ -1,0 +1,7 @@
+// Exemplo do slide 2 mais os casos de precedencia e associatividade
+int x;
+x = 2 + 3 * 4;
+print(x);
+print((2 + 3) * 4);
+print(10 - 3 - 2);
+print(y);
