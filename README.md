@@ -7,11 +7,17 @@ Analisador sintático descendente recursivo (Trabalho 02): recebe os tokens do
 lexer, reconhece programas da MiniLang e constrói a árvore sintática abstrata
 (AST). Não executa as expressões nem verifica declarações de variáveis.
 
-## Integrantes
+## 1. Integrantes e identificação do grupo
 
-| Nome | Matrícula |
+| Integrante | Matrícula |
 | --- | --- |
-| _a preencher_ | _a preencher_ |
+| Pedro Taiette Sato Librais | 2000373 |
+| Thiago Henrique do Rego | 2002255 |
+| Graziella Da Silva Bedani | 1991802 |
+| Arthur Travensolo Guasques Morales | 2008838 |
+| Leticia de Souza Silva | 1995853 |
+| Marcos Gabriel de Paula Martins | 1997254 |
+| Jhenifer Gonçalves Januário | 2019023 |
 
 ## Execução
 
