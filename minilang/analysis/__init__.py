@@ -1,1 +1,1 @@
-"""Implementação da varredura"""
+"""Implementação da varredura e da análise sintática"""

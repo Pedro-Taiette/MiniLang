@@ -88,6 +88,9 @@ class Parser:
             return self.program(), []
         except ParseError as error:
             return None, [error.diagnostic]
+        except RecursionError:
+            token = self.peek()
+            return None, [Diagnostic(token.lexeme, token.line, token.column, "expressao aninhada demais")]
 
     # --- Grupo 5 --- Comandos (Fase 4 - Pessoa 5)
     def program(self) -> Program:
