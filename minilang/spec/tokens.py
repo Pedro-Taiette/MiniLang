@@ -11,6 +11,7 @@ class TokenType(Enum):
     KW_IF = "KW_IF"
     KW_ELSE = "KW_ELSE"
     KW_WHILE = "KW_WHILE"
+    KW_FOR = "KW_FOR"
 
     IDENT = "IDENT"
     INT_LITERAL = "INT_LITERAL"

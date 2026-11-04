@@ -1,0 +1,17 @@
+// Teste das estruturas de controlo de fluxo
+int x;
+x = 0;
+
+if (x < 10) {
+    print(x);
+} else {
+    x = 10;
+}
+
+while (x > 0) {
+    x = x - 1;
+}
+
+for (int i; i < 5; i = i + 1) {
+    print(i);
+}

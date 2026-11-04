@@ -21,6 +21,11 @@ from ..spec.syntax_tree import (
     Output,
     Program,
     Variable,
+    If,
+    While,
+    For,
+    Block,
+    Relational
 )
 from ..spec.tokens import Diagnostic, Token, TokenType
 
@@ -117,8 +122,17 @@ class Parser:
 
         if token_type is TokenType.KW_PRINT:
             return self.output()
+        
+        if token_type is TokenType.KW_IF:
+            return self.if_statement()
+        
+        if token_type is TokenType.KW_WHILE:
+            return self.while_statement()
+        
+        if token_type is TokenType.KW_FOR:
+            return self.for_statement()
 
-        raise self.error("comando ('int', 'print' ou identificador)")
+        raise self.error("comando ('int', 'print', 'if', 'while', 'for' ou identificador)")
 
     def assignment(self) -> Assignment:
         name = self.expect(TokenType.IDENT, "identificador")
@@ -179,3 +193,70 @@ class Parser:
             return inner
 
         raise self.error("numero, identificador ou '('")
+
+    def block(self) -> Block:
+        self.expect(TokenType.LBRACE, "'{'")
+        items = []
+        while not self.at_end() and self.peek().type is not TokenType.RBRACE:
+            items.append(self.item())
+        self.expect(TokenType.RBRACE, "'}'")
+        return Block(tuple(items))
+
+    def condition(self) -> Expression:
+        left = self.expression()
+        rel_ops = {TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.LESS, 
+                    TokenType.LESS_EQUAL, TokenType.GREATER, TokenType.GREATER_EQUAL}
+        
+        if self.peek().type in rel_ops:
+            operator = self.advance()
+            right = self.expression()
+            return Relational(operator, left, right)
+        return left
+
+    def if_statement(self) -> If:
+        self.expect(TokenType.KW_IF, "'if'")
+        self.expect(TokenType.LPAREN, "'('")
+        cond = self.condition()
+        self.expect(TokenType.RPAREN, "')'")
+        then_branch = self.block()
+        else_branch = None
+        
+        if self.match(TokenType.KW_ELSE):
+            else_branch = self.block()
+            
+        return If(cond, then_branch, else_branch)
+
+    def while_statement(self) -> While:
+        self.expect(TokenType.KW_WHILE, "'while'")
+        self.expect(TokenType.LPAREN, "'('")
+        cond = self.condition()
+        self.expect(TokenType.RPAREN, "')'")
+        body = self.block()
+        return While(cond, body)
+
+    def for_statement(self) -> For:
+        self.expect(TokenType.KW_FOR, "'for'")
+        self.expect(TokenType.LPAREN, "'('")
+        
+        initializer = None
+        if self.peek().type is not TokenType.SEMICOLON:
+            if self.peek().type is TokenType.KW_INT:
+                initializer = self.declaration()
+            else:
+                initializer = self.assignment()
+        else:
+            self.advance() # Consome o ';' vazio
+            
+        cond = None
+        if self.peek().type is not TokenType.SEMICOLON:
+            cond = self.condition()
+        self.expect(TokenType.SEMICOLON, "';'")
+        
+        increment = None
+        if self.peek().type is not TokenType.RPAREN:
+            increment = self.assignment()
+            
+        self.expect(TokenType.RPAREN, "')'")
+        body = self.block()
+        
+        return For(initializer, cond, increment, body)

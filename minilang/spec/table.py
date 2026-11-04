@@ -212,14 +212,15 @@ LEXICAL_TABLE: list[LexicalClass] = [
         purpose="Palavras reservadas das extensões; reclassificam um lexema de IDENT_BASE, "
                 "na mesma relação de KEYWORD_CORE: ifx continua IDENT.",
         description="As três palavras que as extensões reservam para controle de fluxo.",
-        examples=("if", "else", "while"),
-        mathematical_definition='L_KeywordExt = RExt = {"if", "else", "while"}',
-        formal_expression='rKeywordExt = "if" ∪ "else" ∪ "while"',
+        examples=("if", "else", "while", "for"),
+        mathematical_definition='L_KeywordExt = RExt = {"if", "else", "while", "for"}',
+        formal_expression='rKeywordExt = "if" ∪ "else" ∪ "while" ∪ "for"',
         action=Action.RECLASSIFIES,
         type_by_lexeme={
             "if": TokenType.KW_IF,
             "else": TokenType.KW_ELSE,
             "while": TokenType.KW_WHILE,
+            "for": TokenType.KW_FOR
         },
     ),
 ]

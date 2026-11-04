@@ -24,6 +24,7 @@ lexer, reconhece programas da MiniLang e constrói a árvore sintática abstrata
 Requer Python 3.10 ou superior.
 
 ```
+python main.py examples/extensoes.min
 python main.py examples/testes-slide2-sucesso.min
 python main.py examples/testes-slide2-erro.min
 ```
@@ -87,7 +88,7 @@ pip install -r requirements.txt
 python -m pytest tests
 ```
 
-Resultado: **441 passed** - 72 do lexer e 369 do analisador sintático.
+Resultado: **436 passed** - 72 do lexer e 364 do analisador sintático.
 
 | Arquivo | O que cobre |
 | --- | --- |
@@ -98,17 +99,20 @@ Resultado: **441 passed** - 72 do lexer e 369 do analisador sintático.
 
 ## Gramática
 
-É a gramática G₂ das aulas 06-08: a gramática da MiniLang com os níveis de
-precedência separados e sem recursão à esquerda. Declaração com inicialização
-(`int x = 10;`) não tem produção (Aula 06) e é erro sintático.
+É a gramática G₂ expandida: a gramática da MiniLang com os níveis de precedência separados e sem recursão à esquerda, acrescida do suporte para blocos e controlo de fluxo (If, While, For). Declaração com inicialização (`int x = 10;`) não tem produção e continua a ser erro sintático.
 
 ```
 Programa   → ListaItens
 ListaItens → Item ListaItens | ε
-Item       → Declaracao | Atribuicao | Saida
+Item       → Declaracao | Atribuicao | Saida | ComandoIf | ComandoWhile | ComandoFor
 Declaracao → KW_INT IDENT SEMICOLON
 Atribuicao → IDENT ASSIGN Expr SEMICOLON
 Saida      → KW_PRINT LPAREN Expr RPAREN SEMICOLON
+ComandoIf    → KW_IF LPAREN Condicao RPAREN Bloco [ KW_ELSE Bloco ]
+ComandoWhile → KW_WHILE LPAREN Condicao RPAREN Bloco
+ComandoFor   → KW_FOR LPAREN [Declaracao | Atribuicao | SEMICOLON] [Condicao] SEMICOLON [Atribuicao] RPAREN Bloco
+Bloco        → LBRACE ListaItens RBRACE
+Condicao     → Expr [ (EQUAL_EQUAL | BANG_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) Expr ]
 Expr       → Termo Expr′
 Expr′      → PLUS Termo Expr′ | MINUS Termo Expr′ | ε
 Termo      → Fator Termo′
@@ -124,13 +128,13 @@ Fator      → LPAREN Expr RPAREN | IDENT | INT_LITERAL
 
 | Não-terminal | FIRST | FOLLOW |
 | --- | --- | --- |
-| `Programa`, `ListaItens` | `KW_INT IDENT KW_PRINT ε` | `EOF` |
-| `Item`, `Declaracao`, `Atribuicao`, `Saida` | o próprio comando (`KW_INT`, `IDENT`, `KW_PRINT`) | `KW_INT IDENT KW_PRINT EOF` |
-| `Expr` | `LPAREN IDENT INT_LITERAL` | `SEMICOLON RPAREN` |
-| `Expr′` | `PLUS MINUS ε` | `SEMICOLON RPAREN` |
-| `Termo` | `LPAREN IDENT INT_LITERAL` | `PLUS MINUS SEMICOLON RPAREN` |
-| `Termo′` | `STAR SLASH ε` | `PLUS MINUS SEMICOLON RPAREN` |
-| `Fator` | `LPAREN IDENT INT_LITERAL` | `STAR SLASH PLUS MINUS SEMICOLON RPAREN` |
+| `Programa`, `ListaItens` | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR ε` | `EOF` |
+| `Item`, `Declaracao`, `Atribuicao`, `Saida` | o próprio comando (`KW_INT`, `IDENT`, `KW_PRINT`, `KW_IF`, etc.) | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR EOF RBRACE` |
+| `Expr` | `LPAREN IDENT INT_LITERAL` | `SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
+| `Expr′` | `PLUS MINUS ε` | `SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
+| `Termo` | `LPAREN IDENT INT_LITERAL` | `PLUS MINUS SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
+| `Termo′` | `STAR SLASH ε` | `PLUS MINUS SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
+| `Fator` | `LPAREN IDENT INT_LITERAL` | `STAR SLASH PLUS MINUS SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
 
 As alternativas de cada não-terminal têm FIRST disjuntos, e nos anuláveis FIRST e
 FOLLOW também são disjuntos: G₂ é LL(1), e um token de consulta basta para cada
@@ -147,9 +151,11 @@ impressos da AST são os do enunciado.
 | `programa()`, `lista_itens()`, `item()` | `program()`, `item_list()`, `item()` |
 | `declaracao()`, `atribuicao()`, `saida()` | `declaration()`, `assignment()`, `output()` |
 | `expressao()`, `termo()`, `fator()` | `expression()`, `term()`, `factor()` |
+| Extensões de Fluxo | `if_statement()`, `while_statement()`, `for_statement()`, `block()`, `condition()` |
 | `peek()`, `advance()`, `expect()`, `match()`, `at_end()` | iguais |
 | `Programa`, `Declaracao`, `Atribuicao`, `Saida` | `Program`, `Declaration`, `Assignment`, `Output` |
 | `Binaria`, `Variavel`, `Inteiro` | `Binary`, `Variable`, `Integer` |
+| Nós de Extensão | `If`, `While`, `For`, `Block`, `Relational` |
 
 ## Organização
 
@@ -174,7 +180,7 @@ tests/
 ├── test_catalog.py         Os casos e interações de cases.py e interactions.py contra a varredura
 ├── cases.py                Casos de teste por classe
 ├── interactions.py         Interações entre classes
-├── test_parser.py          Cursor e as três etapas do Trabalho 02
+├── test_parser.py          Cursor e as etapas do Trabalho 02 (com extensões)
 ├── test_parser_invariants.py  Invariantes do parser
 ├── test_syntax_tree.py     Nós da AST e visualizador
 └── test_grammar.py         O catálogo da gramática contra o parser
@@ -234,8 +240,7 @@ devolve `(programa, [])` ou `(None, [diagnóstico])`, o mesmo contrato de
 - O parser para no primeiro erro sintático: um arquivo com três erros mostra só
   o primeiro.
 - Com erro léxico, o parser não roda.
-- `if`, `else`, `while`, blocos, operadores relacionais e `-` unário estão fora
-  do escopo e são rejeitados como erro sintático.
+- O operador unário (`-`) do escopo e é rejeitado como erro sintático.
 - Não há verificação semântica: `print(y);` sem declarar `y` e `int x; int x;`
   são aceitos.
 - Literais não são avaliados: `007` aparece na AST como `Inteiro(007)`.
