@@ -113,10 +113,70 @@ class Program:
     def __str__(self) -> str:
         return f"Programa([{', '.join(str(item) for item in self.items)}])"
 
+@dataclass(frozen=True)
+class Relational:
+    operator: Token
+    left: Expression
+    right: Expression
 
-Expression = Integer | Variable | Binary
-Item = Declaration | Assignment | Output
-Node = Program | Item | Expression
+    def label(self) -> str:
+        return f"Relacional({self.operator.lexeme})"
+
+    def children(self) -> tuple[Node, ...]:
+        return (self.left, self.right)
+
+@dataclass(frozen=True)
+class Block:
+    items: tuple[Item, ...]
+
+    def label(self) -> str:
+        return "Bloco"
+
+    def children(self) -> tuple[Node, ...]:
+        return self.items
+
+@dataclass(frozen=True)
+class If:
+    condition: Expression
+    then_branch: Block
+    else_branch: Block | None
+
+    def label(self) -> str:
+        return "If"
+
+    def children(self) -> tuple[Node, ...]:
+        if self.else_branch:
+            return (self.condition, self.then_branch, self.else_branch)
+        return (self.condition, self.then_branch)
+
+@dataclass(frozen=True)
+class While:
+    condition: Expression
+    body: Block
+
+    def label(self) -> str:
+        return "While"
+
+    def children(self) -> tuple[Node, ...]:
+        return (self.condition, self.body)
+
+@dataclass(frozen=True)
+class For:
+    initializer: Item | None
+    condition: Expression | None
+    increment: Item | None
+    body: Block
+
+    def label(self) -> str:
+        return "For"
+
+    def children(self) -> tuple[Node, ...]:
+        return tuple(child for child in (self.initializer, self.condition, self.increment, self.body) if child is not None)
+
+
+Expression = Integer | Variable | Binary | Relational
+Item = Declaration | Assignment | Output | If | While | For
+Node = Program | Item | Expression | Block
 
 
 def format_tree(node: Node) -> str:
