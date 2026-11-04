@@ -8,6 +8,9 @@ dev_note:
     Correspondência com o enunciado: programa -> program, lista_itens -> item_list, item -> item,
     declaracao -> declaration, atribuicao -> assignment, saida -> output, expressao -> expression,
     termo -> term, fator -> factor
+
+    Extensões de fluxo: bloco -> block, condicao -> condition, comando_if -> if_statement,
+    comando_while -> while_statement, comando_for -> for_statement, incremento -> increment
 """
 
 from ..spec.grammar import ADDITIVE_OPERATORS, MULTIPLICATIVE_OPERATORS
@@ -254,9 +257,16 @@ class Parser:
         
         increment = None
         if self.peek().type is not TokenType.RPAREN:
-            increment = self.assignment()
+            increment = self.increment()
             
         self.expect(TokenType.RPAREN, "')'")
         body = self.block()
         
         return For(initializer, cond, increment, body)
+
+    def increment(self) -> Assignment:
+        # Atribuição sem o ';' final: no for, quem fecha o incremento é o ')'
+        name = self.expect(TokenType.IDENT, "identificador")
+        self.expect(TokenType.ASSIGN, "'='")
+        value = self.expression()
+        return Assignment(name, value)
