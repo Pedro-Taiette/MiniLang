@@ -97,3 +97,9 @@ def test_example_is_recognized_by_its_own_method(production: Production, example
     parser = Parser(tokens)
     getattr(parser, production.method)()    
     assert parser.at_end(), f"{production.name} {example!r}: sobrou {parser.peek()}"
+
+def test_optional_parts_are_decided_by_one_token():
+    # [ KW_ELSE Bloco ] em ComandoIf; [ Condicao ] e [ Incremento ] em ComandoFor
+    assert TokenType.KW_ELSE not in PRODUCTIONS["ComandoIf"].follow
+    assert TokenType.SEMICOLON not in PRODUCTIONS["Condicao"].first
+    assert TokenType.RPAREN not in PRODUCTIONS["Incremento"].first

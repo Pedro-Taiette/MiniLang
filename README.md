@@ -88,7 +88,7 @@ pip install -r requirements.txt
 python -m pytest tests
 ```
 
-Resultado: **436 passed** - 72 do lexer e 364 do analisador sintático.
+Resultado: **496 passed** - 72 do lexer e 424 do analisador sintático.
 
 | Arquivo | O que cobre |
 | --- | --- |
@@ -110,9 +110,12 @@ Atribuicao → IDENT ASSIGN Expr SEMICOLON
 Saida      → KW_PRINT LPAREN Expr RPAREN SEMICOLON
 ComandoIf    → KW_IF LPAREN Condicao RPAREN Bloco [ KW_ELSE Bloco ]
 ComandoWhile → KW_WHILE LPAREN Condicao RPAREN Bloco
-ComandoFor   → KW_FOR LPAREN [Declaracao | Atribuicao | SEMICOLON] [Condicao] SEMICOLON [Atribuicao] RPAREN Bloco
+ComandoFor   → KW_FOR LPAREN Inicializacao [ Condicao ] SEMICOLON [ Incremento ] RPAREN Bloco
+Inicializacao → Declaracao | Atribuicao | SEMICOLON
+Incremento   → IDENT ASSIGN Expr
 Bloco        → LBRACE ListaItens RBRACE
-Condicao     → Expr [ (EQUAL_EQUAL | BANG_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) Expr ]
+Condicao     → Expr [ OpRelacional Expr ]
+OpRelacional → EQUAL_EQUAL | BANG_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL
 Expr       → Termo Expr′
 Expr′      → PLUS Termo Expr′ | MINUS Termo Expr′ | ε
 Termo      → Fator Termo′
@@ -128,8 +131,13 @@ Fator      → LPAREN Expr RPAREN | IDENT | INT_LITERAL
 
 | Não-terminal | FIRST | FOLLOW |
 | --- | --- | --- |
-| `Programa`, `ListaItens` | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR ε` | `EOF` |
-| `Item`, `Declaracao`, `Atribuicao`, `Saida` | o próprio comando (`KW_INT`, `IDENT`, `KW_PRINT`, `KW_IF`, etc.) | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR EOF RBRACE` |
+| `Programa` | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR ε` | `EOF` |
+| `ListaItens` | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR ε` | `EOF RBRACE` |
+| `Item`, `Saida`, `ComandoIf`, `ComandoWhile`, `ComandoFor` | o próprio comando (`KW_INT`, `IDENT`, `KW_PRINT`, `KW_IF`, etc.) | `KW_INT IDENT KW_PRINT KW_IF KW_WHILE KW_FOR EOF RBRACE` |
+| `Declaracao`, `Atribuicao` | `KW_INT`, `IDENT` | os do `Item` mais `LPAREN INT_LITERAL SEMICOLON` (inicialização do `for`) |
+| `Bloco` | `LBRACE` | os do `Item` mais `KW_ELSE` |
+| `Condicao` | `LPAREN IDENT INT_LITERAL` | `SEMICOLON RPAREN` |
+| `Incremento` | `IDENT` | `RPAREN` |
 | `Expr` | `LPAREN IDENT INT_LITERAL` | `SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
 | `Expr′` | `PLUS MINUS ε` | `SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
 | `Termo` | `LPAREN IDENT INT_LITERAL` | `PLUS MINUS SEMICOLON RPAREN EQUAL_EQUAL BANG_EQUAL LESS LESS_EQUAL GREATER GREATER_EQUAL` |
@@ -151,7 +159,7 @@ impressos da AST são os do enunciado.
 | `programa()`, `lista_itens()`, `item()` | `program()`, `item_list()`, `item()` |
 | `declaracao()`, `atribuicao()`, `saida()` | `declaration()`, `assignment()`, `output()` |
 | `expressao()`, `termo()`, `fator()` | `expression()`, `term()`, `factor()` |
-| Extensões de Fluxo | `if_statement()`, `while_statement()`, `for_statement()`, `block()`, `condition()` |
+| Extensões de Fluxo | `if_statement()`, `while_statement()`, `for_statement()`, `block()`, `condition()`, `increment()` |
 | `peek()`, `advance()`, `expect()`, `match()`, `at_end()` | iguais |
 | `Programa`, `Declaracao`, `Atribuicao`, `Saida` | `Program`, `Declaration`, `Assignment`, `Output` |
 | `Binaria`, `Variavel`, `Inteiro` | `Binary`, `Variable`, `Integer` |
