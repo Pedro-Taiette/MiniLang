@@ -211,16 +211,26 @@ LEXICAL_TABLE: list[LexicalClass] = [
         finite_language=True,
         purpose="Palavras reservadas das extensões; reclassificam um lexema de IDENT_BASE, "
                 "na mesma relação de KEYWORD_CORE: ifx continua IDENT.",
-        description="As três palavras que as extensões reservam para controle de fluxo.",
-        examples=("if", "else", "while", "for"),
-        mathematical_definition='L_KeywordExt = RExt = {"if", "else", "while", "for"}',
-        formal_expression='rKeywordExt = "if" ∪ "else" ∪ "while" ∪ "for"',
+        description="As palavras que as extensões reservam: controle de fluxo (if, else, while, for), "
+                    "o tipo bool com seus literais (true, false) e os operadores lógicos (and, or).",
+        examples=("if", "else", "while", "for", "bool", "true", "false", "and", "or"),
+        mathematical_definition=(
+            'L_KeywordExt = RExt = {"if", "else", "while", "for", "bool", "true", "false", "and", "or"}'
+        ),
+        formal_expression=(
+            'rKeywordExt = "if" ∪ "else" ∪ "while" ∪ "for" ∪ "bool" ∪ "true" ∪ "false" ∪ "and" ∪ "or"'
+        ),
         action=Action.RECLASSIFIES,
         type_by_lexeme={
             "if": TokenType.KW_IF,
             "else": TokenType.KW_ELSE,
             "while": TokenType.KW_WHILE,
-            "for": TokenType.KW_FOR
+            "for": TokenType.KW_FOR,
+            "bool": TokenType.KW_BOOL,
+            "true": TokenType.KW_TRUE,
+            "false": TokenType.KW_FALSE,
+            "and": TokenType.KW_AND,
+            "or": TokenType.KW_OR,
         },
     ),
 ]
