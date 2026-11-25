@@ -1,193 +1,180 @@
-"""Nós da árvore sintática abstrata da MiniLang e o visualizador textual
+"""Nós da árvore sintática abstrata (AST) da MiniLang
 
 dev_note:
-    Os nós guardam o Token de origem, não só o lexema - a análise semântica vai precisar da posição
-    Os rótulos seguem o enunciado (Programa, Declaracao(x), Binaria(+)) porque são saída, não identificadores
+    Os nós só guardam dados: o parser constrói e a análise semântica anota (os campos que começam em None)
+    label() é como o nó aparece na saída e segue o enunciado. children() são os filhos, na ordem do código-fonte
     Parênteses não viram nó: o agrupamento já está na forma da árvore
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
+from .grammar import COMPARISON_OPERATORS
+from .symbols import Scope, Symbol
 from .tokens import Token
+from .types import Type
 
 
-@dataclass(frozen=True)
+# --- Expressões ---
+@dataclass
 class Integer:
-    value: Token
+    literal: Token
+    type: Type | None = None
 
     def label(self) -> str:
-        return f"Inteiro({self.value.lexeme})"      # Lexema como veio: 007 não vira 7
+        return f"Inteiro({self.literal.lexeme})"       # o lexema como veio: 007 não vira 7
 
-    def children(self) -> tuple[Node, ...]:
-        return ()
-
-    def __str__(self) -> str:
-        return self.label()
+    def children(self) -> list:
+        return []
 
 
-@dataclass(frozen=True)
+@dataclass
+class Boolean:
+    literal: Token
+    type: Type | None = None
+
+    def label(self) -> str:
+        return f"Booleano({self.literal.lexeme})"
+
+    def children(self) -> list:
+        return []
+
+
+@dataclass
 class Variable:
     name: Token
+    symbol: Symbol | None = None
+    type: Type | None = None
 
     def label(self) -> str:
         return f"Variavel({self.name.lexeme})"
 
-    def children(self) -> tuple[Node, ...]:
-        return ()
-
-    def __str__(self) -> str:
-        return self.label()
+    def children(self) -> list:
+        return []
 
 
-@dataclass(frozen=True)
+@dataclass
 class Binary:
     operator: Token
-    left: Expression
-    right: Expression
+    left: object
+    right: object
+    type: Type | None = None
 
     def label(self) -> str:
+        if self.operator.type in COMPARISON_OPERATORS:
+            return f"Relacional({self.operator.lexeme})"
         return f"Binaria({self.operator.lexeme})"
 
-    def children(self) -> tuple[Node, ...]:
-        return (self.left, self.right)
-
-    def __str__(self) -> str:
-        return f"Binaria({self.operator.lexeme}, {self.left}, {self.right})"
+    def children(self) -> list:
+        return [self.left, self.right]
 
 
-@dataclass(frozen=True)
+# --- Comandos ---
+@dataclass
 class Declaration:
+    keyword: Token          # 'int' ou 'bool'
     name: Token
+    symbol: Symbol | None = None
 
     def label(self) -> str:
         return f"Declaracao({self.name.lexeme})"
 
-    def children(self) -> tuple[Node, ...]:
-        return ()
-
-    def __str__(self) -> str:
-        return self.label()
+    def children(self) -> list:
+        return []
 
 
-@dataclass(frozen=True)
+@dataclass
 class Assignment:
     name: Token
-    value: Expression
+    value: object
+    symbol: Symbol | None = None
 
     def label(self) -> str:
         return f"Atribuicao({self.name.lexeme})"
 
-    def children(self) -> tuple[Node, ...]:
-        return (self.value,)
-
-    def __str__(self) -> str:
-        return f"Atribuicao({self.name.lexeme}, {self.value})"
+    def children(self) -> list:
+        return [self.value]
 
 
-@dataclass(frozen=True)
+@dataclass
 class Output:
-    value: Expression
+    value: object
 
     def label(self) -> str:
         return "Saida"
 
-    def children(self) -> tuple[Node, ...]:
-        return (self.value,)
-
-    def __str__(self) -> str:
-        return f"Saida({self.value})"
+    def children(self) -> list:
+        return [self.value]
 
 
-@dataclass(frozen=True)
-class Program:
-    items: tuple[Item, ...]
-
-    def label(self) -> str:
-        return "Programa"
-
-    def children(self) -> tuple[Node, ...]:
-        return self.items
-
-    def __str__(self) -> str:
-        return f"Programa([{', '.join(str(item) for item in self.items)}])"
-
-@dataclass(frozen=True)
-class Relational:
-    operator: Token
-    left: Expression
-    right: Expression
-
-    def label(self) -> str:
-        return f"Relacional({self.operator.lexeme})"
-
-    def children(self) -> tuple[Node, ...]:
-        return (self.left, self.right)
-
-@dataclass(frozen=True)
+@dataclass
 class Block:
-    items: tuple[Item, ...]
+    brace: Token            # o '{', que dá a posição do escopo
+    items: list
+    scope: Scope | None = None
 
     def label(self) -> str:
         return "Bloco"
 
-    def children(self) -> tuple[Node, ...]:
+    def children(self) -> list:
         return self.items
 
-@dataclass(frozen=True)
+
+@dataclass
 class If:
-    condition: Expression
+    keyword: Token
+    condition: object
     then_branch: Block
     else_branch: Block | None
 
     def label(self) -> str:
         return "If"
 
-    def children(self) -> tuple[Node, ...]:
-        if self.else_branch:
-            return (self.condition, self.then_branch, self.else_branch)
-        return (self.condition, self.then_branch)
+    def children(self) -> list:
+        if self.else_branch is None:
+            return [self.condition, self.then_branch]
+        return [self.condition, self.then_branch, self.else_branch]
 
-@dataclass(frozen=True)
+
+@dataclass
 class While:
-    condition: Expression
+    keyword: Token
+    condition: object
     body: Block
 
     def label(self) -> str:
         return "While"
 
-    def children(self) -> tuple[Node, ...]:
-        return (self.condition, self.body)
+    def children(self) -> list:
+        return [self.condition, self.body]
 
-@dataclass(frozen=True)
+
+@dataclass
 class For:
-    initializer: Item | None
-    condition: Expression | None
-    increment: Item | None
+    keyword: Token
+    initializer: object     # as três partes do cabeçalho podem faltar (None)
+    condition: object
+    increment: object
     body: Block
+    scope: Scope | None = None
 
     def label(self) -> str:
         return "For"
 
-    def children(self) -> tuple[Node, ...]:
-        return tuple(child for child in (self.initializer, self.condition, self.increment, self.body) if child is not None)
+    def children(self) -> list:
+        children = []
+        for part in [self.initializer, self.condition, self.increment]:
+            if part is not None:
+                children.append(part)
+        children.append(self.body)
+        return children
 
 
-Expression = Integer | Variable | Binary | Relational
-Item = Declaration | Assignment | Output | If | While | For
-Node = Program | Item | Expression | Block
+@dataclass
+class Program:
+    items: list
 
+    def label(self) -> str:
+        return "Programa"
 
-def format_tree(node: Node) -> str:
-    lines = [node.label()]
-
-    def walk(parent: Node, prefix: str) -> None:
-        children = parent.children()
-        for index, child in enumerate(children):
-            last = index == len(children) - 1
-            lines.append(prefix + ("└── " if last else "├── ") + child.label())
-            walk(child, prefix + ("    " if last else "│   "))
-
-    walk(node, "")
-    return "\n".join(lines)
+    def children(self) -> list:
+        return self.items

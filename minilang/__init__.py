@@ -1,1 +1,1 @@
-"""Analisadores léxico e sintático da MiniLang"""
+"""Analisadores léxico, sintático e semântico da MiniLang"""

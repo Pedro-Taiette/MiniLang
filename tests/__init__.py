@@ -1,1 +1,1 @@
-"""Testes e catálogo: casos e interações executados contra a varredura"""
+"""Testes do lexer, do parser e da análise semântica, e o catálogo de casos do lexer"""

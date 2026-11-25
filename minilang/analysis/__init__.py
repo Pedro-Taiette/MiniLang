@@ -1,1 +1,1 @@
-"""Implementação da varredura e da análise sintática"""
+"""As máquinas: a varredura, a análise sintática e a análise semântica"""

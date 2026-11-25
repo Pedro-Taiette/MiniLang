@@ -12,6 +12,11 @@ class TokenType(Enum):
     KW_ELSE = "KW_ELSE"
     KW_WHILE = "KW_WHILE"
     KW_FOR = "KW_FOR"
+    KW_BOOL = "KW_BOOL"
+    KW_TRUE = "KW_TRUE"
+    KW_FALSE = "KW_FALSE"
+    KW_AND = "KW_AND"
+    KW_OR = "KW_OR"
 
     IDENT = "IDENT"
     INT_LITERAL = "INT_LITERAL"
