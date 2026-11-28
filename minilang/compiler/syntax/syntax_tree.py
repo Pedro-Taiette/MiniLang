@@ -8,17 +8,15 @@ dev_note:
 
 from dataclasses import dataclass
 
+from ..lexical.tokens import Token
 from .grammar import COMPARISON_OPERATORS
-from .symbols import Scope, Symbol
-from .tokens import Token
-from .types import Type
 
 
 # --- Expressões ---
 @dataclass
 class Integer:
     literal: Token
-    type: Type | None = None
+    type: object = None
 
     def label(self) -> str:
         return f"Inteiro({self.literal.lexeme})"       # o lexema como veio: 007 não vira 7
@@ -30,7 +28,7 @@ class Integer:
 @dataclass
 class Boolean:
     literal: Token
-    type: Type | None = None
+    type: object = None
 
     def label(self) -> str:
         return f"Booleano({self.literal.lexeme})"
@@ -42,8 +40,8 @@ class Boolean:
 @dataclass
 class Variable:
     name: Token
-    symbol: Symbol | None = None
-    type: Type | None = None
+    symbol: object = None
+    type: object = None
 
     def label(self) -> str:
         return f"Variavel({self.name.lexeme})"
@@ -57,7 +55,7 @@ class Binary:
     operator: Token
     left: object
     right: object
-    type: Type | None = None
+    type: object = None
 
     def label(self) -> str:
         if self.operator.type in COMPARISON_OPERATORS:
@@ -73,7 +71,7 @@ class Binary:
 class Declaration:
     keyword: Token          # 'int' ou 'bool'
     name: Token
-    symbol: Symbol | None = None
+    symbol: object = None
 
     def label(self) -> str:
         return f"Declaracao({self.name.lexeme})"
@@ -86,7 +84,7 @@ class Declaration:
 class Assignment:
     name: Token
     value: object
-    symbol: Symbol | None = None
+    symbol: object = None
 
     def label(self) -> str:
         return f"Atribuicao({self.name.lexeme})"
@@ -110,7 +108,7 @@ class Output:
 class Block:
     brace: Token            # o '{', que dá a posição do escopo
     items: list
-    scope: Scope | None = None
+    scope: object = None
 
     def label(self) -> str:
         return "Bloco"
@@ -155,7 +153,7 @@ class For:
     condition: object
     increment: object
     body: Block
-    scope: Scope | None = None
+    scope: object = None
 
     def label(self) -> str:
         return "For"

@@ -6,11 +6,13 @@ dev_note:
     advance nunca passa do EOF - o lexer garante que ele é o último token
 """
 
-from ..spec.grammar import (ADDITIVE_OPERATORS, AND_OPERATORS, COMPARISON_OPERATORS, MULTIPLICATIVE_OPERATORS,
-                            OR_OPERATORS)
-from ..spec.syntax_tree import (Assignment, Binary, Block, Boolean, Declaration, For, If, Integer, Output, Program,
-                                Variable, While)
-from ..spec.tokens import Diagnostic, Token, TokenType
+from ..common.cursor import Cursor
+from ..common.diagnostics import Diagnostic, Phase
+from ..lexical.tokens import Token, TokenType
+from .grammar import (ADDITIVE_OPERATORS, AND_OPERATORS, COMPARISON_OPERATORS, MULTIPLICATIVE_OPERATORS,
+                      OR_OPERATORS)
+from .syntax_tree import (Assignment, Binary, Block, Boolean, Declaration, For, If, Integer, Output, Program,
+                          Variable, While)
 
 
 class ParseError(Exception):
@@ -20,36 +22,19 @@ class ParseError(Exception):
         self.diagnostic = diagnostic
 
 
-class Parser:
+class Parser(Cursor):
 
     def __init__(self, tokens: list[Token]):
-        self.tokens = tokens
-        self.current = 0
+        super().__init__(tokens)
 
-    # --- Grupo 1 --- Olhar sem consumir
-    def peek(self) -> Token:
-        return self.tokens[self.current]
-
+    # --- Grupo 1 --- Olhar sem consumir (peek vem de Cursor)
     def check(self, token_type: TokenType) -> bool:
         return self.peek().type == token_type
 
     def at_end(self) -> bool:
         return self.check(TokenType.EOF)
 
-    # --- Grupo 2 --- Consumir
-    def advance(self) -> Token:
-        token = self.peek()
-        if not self.at_end():
-            self.current += 1
-        return token
-
-    def match(self, token_type: TokenType) -> bool:
-        if not self.check(token_type):
-            return False
-
-        self.advance()
-        return True
-
+    # --- Grupo 2 --- Consumir (advance e match vêm de Cursor e usam o check e o at_end acima)
     def expect(self, token_type: TokenType, expected: str) -> Token:
         if self.check(token_type):
             return self.advance()
@@ -65,7 +50,7 @@ class Parser:
             found = repr(token.lexeme)
 
         message = f"esperado {expected}, encontrado {found}"
-        return ParseError(Diagnostic(token.lexeme, token.line, token.column, message))
+        return ParseError(Diagnostic(Phase.SYNTAX, token.line, token.column, message, token.lexeme))
 
     # --- Grupo 4 --- Programa e comandos
     def parse(self):
@@ -75,7 +60,8 @@ class Parser:
             return None, [error.diagnostic]
         except RecursionError:
             token = self.peek()
-            return None, [Diagnostic(token.lexeme, token.line, token.column, "expressao aninhada demais")]
+            message = "expressao aninhada demais"
+            return None, [Diagnostic(Phase.SYNTAX, token.line, token.column, message, token.lexeme)]
 
     def program(self) -> Program:
         """Program -> ItemList"""
@@ -240,7 +226,7 @@ class Parser:
         return left
 
     def factor(self):
-        """Factor -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | KW_TRUE | KW_FALSE"""
+        """Factor -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | BOOL_LITERAL"""
         if self.check(TokenType.LPAREN):
             return self.parenthesized()
 
@@ -250,7 +236,7 @@ class Parser:
         if self.check(TokenType.INT_LITERAL):
             return Integer(self.advance())
 
-        if self.check(TokenType.KW_TRUE) or self.check(TokenType.KW_FALSE):
+        if self.check(TokenType.BOOL_LITERAL):
             return Boolean(self.advance())
 
         raise self.error("numero, identificador ou '('")

@@ -2,10 +2,10 @@
 
 import pytest
 
-from minilang.analysis.parser import Parser
+from minilang.compiler.syntax.parser import Parser
 
-from .support import compact, parse, tokenize
-from .test_parser import PROGRAMS, SYNTAX_ERRORS
+from tests.support import compact, parse, tokenize
+from tests.syntax.test_parser import PROGRAMS, SYNTAX_ERRORS
 
 # Entradas soltas, mais todas as que o test_parser já usa
 SOURCES = [";;;", "(((", "{{{", "int", "print(", "x = x = x;"]
