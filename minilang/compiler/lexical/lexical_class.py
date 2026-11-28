@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Callable
 from .tokens import TokenType
 
 if TYPE_CHECKING:
-    from ..analysis.lexer import Lexer
+    from .lexer import Lexer
 
 
 class Action(Enum):

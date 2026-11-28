@@ -33,7 +33,7 @@ dev_note:
     Factor       -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | KW_TRUE | KW_FALSE
 """
 
-from .tokens import TokenType
+from ..lexical.tokens import TokenType
 
 # Os operadores de cada nível de expressão
 OR_OPERATORS = [TokenType.KW_OR]

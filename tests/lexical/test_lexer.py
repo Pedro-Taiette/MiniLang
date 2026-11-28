@@ -1,12 +1,12 @@
 import pytest
 
-from minilang.analysis.lexer import Lexer
-from minilang.spec.tokens import TokenType
+from minilang.compiler.lexical.lexer import Lexer
+from minilang.compiler.lexical.tokens import TokenType
 
 
 def scan(source: str):
     tokens, diagnostics = Lexer(source).scan_tokens()
-    return tokens, [(d.symbol, d.line, d.column) for d in diagnostics]
+    return tokens, [(d.lexeme, d.line, d.column) for d in diagnostics]
 
 
 # 4.1 Tokenizacao e 6 Verificacao individual

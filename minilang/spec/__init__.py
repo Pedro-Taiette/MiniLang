@@ -1,1 +1,0 @@
-"""Especificação da linguagem: alfabeto, tokens, tabela léxica, gramática, nós da AST, tipos e símbolos"""

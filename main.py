@@ -5,9 +5,9 @@
 
 import sys
 
-from minilang.analysis.lexer import Lexer
-from minilang.analysis.parser import Parser
-from minilang.spec.syntax_tree import format_tree
+from minilang.compiler.lexical.lexer import Lexer
+from minilang.compiler.syntax.parser import Parser
+from minilang.compiler.syntax.tree_printer import format_tree
 
 sys.stdout.reconfigure(encoding="utf-8")
 

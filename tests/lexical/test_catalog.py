@@ -1,12 +1,12 @@
 """Os casos e as interacoes do catalogo (cases.py)"""
 
-from tests.cases import CASES
-from tests.interactions import EXERCISE_10, EXERCISE_11, INTERACTIONS
+from tests.lexical.cases import CASES
+from tests.lexical.interactions import EXERCISE_10, EXERCISE_11, INTERACTIONS
 
-from minilang.analysis.lexer import Lexer
-from minilang.spec.lexical_class import Action
-from minilang.spec.table import LEXICAL_TABLE
-from minilang.spec.tokens import TokenType
+from minilang.compiler.lexical.lexer import Lexer
+from minilang.compiler.lexical.lexical_class import Action
+from minilang.compiler.lexical.table import LEXICAL_TABLE
+from minilang.compiler.lexical.tokens import TokenType
 
 CLASSES = {lexical_class.name: lexical_class for lexical_class in LEXICAL_TABLE}
 
@@ -47,6 +47,6 @@ def test_todas_as_interacoes():
         assert tuple(t.type.value for t in tokens) == interaction.emitted, (
             f"{interaction.source!r}: {interaction.rationale}"
         )
-        assert tuple((d.symbol, d.line, d.column) for d in diagnostics) == interaction.diagnostics, (
+        assert tuple((d.lexeme, d.line, d.column) for d in diagnostics) == interaction.diagnostics, (
             f"{interaction.source!r}: {interaction.rationale}"
         )

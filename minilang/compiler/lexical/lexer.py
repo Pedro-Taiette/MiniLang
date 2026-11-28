@@ -7,19 +7,21 @@ dev_note:
     Toda a atualização de linha e coluna fica em `advance`, inclusive a de `match`
 """
 
-from ..spec.alphabet import is_digit, is_ident_continue, is_line_break, is_source_symbol
-from ..spec.table import RESERVED_WORDS, SCAN_TABLE
-from ..spec.tokens import Diagnostic, Token, TokenType
+from ..common.cursor import Cursor
+from ..common.diagnostics import Diagnostic, Phase
+from .alphabet import is_digit, is_ident_continue, is_line_break, is_source_symbol
+from .table import RESERVED_WORDS, SCAN_TABLE
+from .tokens import Token, TokenType
 
 
-class Lexer:
+class Lexer(Cursor):
+    END = ""        # peek devolve a cadeia vazia no fim da entrada
 
     def __init__(self, source: str):
         # CRLF vira um único NL para que a quebra conte uma linha só
-        self.source = source.replace("\r\n", "\n")
+        super().__init__(source.replace("\r\n", "\n"))
 
         self.start = 0          # Indice do primeiro símbolo do lexema atual
-        self.current = 0        # Indice do proximo simbolo a ler
         self.line = 1           # Posicao associada a current (current position do cursor)
         self.column = 1         # Idem
         self.start_line = 1     # posicao do primeiro simbolo do lexema atual
@@ -29,24 +31,13 @@ class Lexer:
         self.tokens: list[Token] = []
         self.diagnostics: list[Diagnostic] = []
 
-    # --- Grupo 1 --- Olhar sem consumir
-    def at_end(self) -> bool:
-        return self.current >= len(self.source)
-
-    def peek(self) -> str:
-            if self.at_end():
-                return ""
-            return self.source[self.current]
-
+    # --- Grupo 1 --- Olhar sem consumir (at_end, peek e check vêm de Cursor)
     def peek_next(self) -> str:
-            if self.current + 1 >= len(self.source):
-                return ""
-            return self.source[self.current + 1]
+        return self.peek(1)
 
-    # --- Grupo 2 --- Consumir
+    # --- Grupo 2 --- Consumir (match vem de Cursor e passa por este advance)
     def advance(self) -> str:
-        symbol = self.source[self.current]
-        self.current += 1
+        symbol = super().advance()
 
         if is_line_break(symbol):
             self.line += 1
@@ -56,16 +47,9 @@ class Lexer:
 
         return symbol
 
-    def match(self, expected: str) -> bool:
-        if self.peek() != expected:
-            return False
-
-        self.advance()
-        return True
-
     # --- Grupo 3 --- Produzir saídas
     def lexeme(self) -> str:
-        return self.source[self.start:self.current]
+        return self.items[self.start:self.current]
 
     def add_token(self, token_type: TokenType) -> None:
         self.tokens.append(
@@ -79,7 +63,7 @@ class Lexer:
             message = f"simbolo {symbol!r} fora do alfabeto da MiniLang"
 
         self.diagnostics.append(
-            Diagnostic(symbol, self.start_line, self.start_column, message)
+            Diagnostic(Phase.LEXICAL, self.start_line, self.start_column, message, symbol)
         )
 
     # --- Grupo 4 --- Orquestração de classes léxicas

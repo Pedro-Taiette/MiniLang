@@ -2,10 +2,10 @@
 
 import pytest
 
-from minilang.analysis.parser import ParseError, Parser
-from minilang.spec.tokens import TokenType
+from minilang.compiler.syntax.parser import ParseError, Parser
+from minilang.compiler.lexical.tokens import TokenType
 
-from .support import compact, parse, tokenize
+from tests.support import compact, parse, tokenize
 
 
 def test_cursor():

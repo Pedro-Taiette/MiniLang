@@ -1,4 +1,4 @@
-"""Tipos de token da MiniLang e os registros que o lexer produz"""
+"""Tipos de token da MiniLang e o registro que o lexer produz"""
 
 from dataclasses import dataclass
 from enum import Enum
@@ -58,14 +58,3 @@ class Token:
 
     def __str__(self) -> str:
         return f"{self.type.value}({self.lexeme!r}) em {self.line}:{self.column}"
-
-
-@dataclass(frozen=True)
-class Diagnostic:
-    symbol: str
-    line: int
-    column: int
-    message: str
-
-    def __str__(self) -> str:
-        return f"{self.line}:{self.column}: {self.message}"

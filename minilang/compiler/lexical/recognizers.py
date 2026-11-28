@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from .alphabet import is_digit, is_ident_start, is_whitespace
 
 if TYPE_CHECKING:
-    from ..analysis.lexer import Lexer
+    from .lexer import Lexer
     from .lexical_class import LexicalClass
 
 

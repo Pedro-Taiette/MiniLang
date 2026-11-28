@@ -1,9 +1,9 @@
 import pytest
 
-from minilang.analysis.lexer import Lexer
-from minilang.spec.lexical_class import Action
-from minilang.spec.table import LEXICAL_TABLE
-from minilang.spec.tokens import TokenType
+from minilang.compiler.lexical.lexer import Lexer
+from minilang.compiler.lexical.lexical_class import Action
+from minilang.compiler.lexical.table import LEXICAL_TABLE
+from minilang.compiler.lexical.tokens import TokenType
 
 SOURCES = [
     "",
