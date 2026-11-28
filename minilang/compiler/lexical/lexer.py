@@ -1,33 +1,24 @@
-"""Varredura manual da MiniLang
-
-dev_note:
-    O lexer mantém um cursor sobre o código-fonte e não divide a entrada previamente. `scan_token` não decide nada sozinho: pergunta à tabela léxica qual
-    classe é dona da posição atual e deixa a classe consumir o lexema
-
-    Toda a atualização de linha e coluna fica em `advance`, inclusive a de `match`
-"""
+"""Varredura manual da MiniLang: lê o código-fonte símbolo a símbolo e devolve tokens e diagnósticos"""
 
 from ..common.cursor import Cursor
 from ..common.diagnostics import Diagnostic, Phase
-from .alphabet import is_digit, is_ident_continue, is_line_break, is_source_symbol
-from .table import RESERVED_WORDS, SCAN_TABLE
-from .tokens import Token, TokenType
+from .alphabet import (CARRIAGE_RETURN, NEWLINE, is_digit, is_ident_continue, is_ident_start, is_line_break,
+                       is_source_symbol, is_whitespace)
+from .tokens import KEYWORDS, SYMBOLS, Token, TokenType
 
 
 class Lexer(Cursor):
     END = ""        # peek devolve a cadeia vazia no fim da entrada
 
     def __init__(self, source: str):
-        # CRLF vira um único NL para que a quebra conte uma linha só
-        super().__init__(source.replace("\r\n", "\n"))
+        super().__init__(source)
 
-        self.start = 0          # Indice do primeiro símbolo do lexema atual
-        self.line = 1           # Posicao associada a current (current position do cursor)
-        self.column = 1         # Idem
+        self.start = 0          # indice do primeiro simbolo do lexema atual
+        self.line = 1           # posicao do cursor
+        self.column = 1
         self.start_line = 1     # posicao do primeiro simbolo do lexema atual
-        self.start_column = 1   # Idem
+        self.start_column = 1
 
-        # -- Saidas -------
         self.tokens: list[Token] = []
         self.diagnostics: list[Diagnostic] = []
 
@@ -38,6 +29,10 @@ class Lexer(Cursor):
     # --- Grupo 2 --- Consumir (match vem de Cursor e passa por este advance)
     def advance(self) -> str:
         symbol = super().advance()
+
+        # no CRLF quem conta a quebra é o NL, senao seriam duas linhas
+        if symbol == CARRIAGE_RETURN and self.peek() == NEWLINE:
+            return symbol
 
         if is_line_break(symbol):
             self.line += 1
@@ -66,9 +61,8 @@ class Lexer(Cursor):
             Diagnostic(Phase.LEXICAL, self.start_line, self.start_column, message, symbol)
         )
 
-    # --- Grupo 4 --- Orquestração de classes léxicas
+    # --- Grupo 4 --- Varredura
     def scan_tokens(self) -> tuple[list[Token], list[Diagnostic]]:
-        # Uma volta = um lexema, que pode ser um token ou um erro - evita o loop infinito de relatar o mesmo erro várias vezes
         while not self.at_end():
             self.start = self.current
             self.start_line = self.line
@@ -80,22 +74,25 @@ class Lexer(Cursor):
         return self.tokens, self.diagnostics
 
     def scan_token(self) -> None:
-        # Divergecia do enunciado. Ao inves de uma cadeida de if/elif, a responsabilidade de reconhecer o lexema é delegada a cada classe léxica. Isso permite que a tabela seja facilmente estendida com novas classes.
-        for lexical_class in SCAN_TABLE:
-            if lexical_class.claims_at(self):
-                lexical_class.consume_at(self)
-                return
+        symbol = self.peek()
 
-        # Consumir antes de relatar garante progresso
-        self.report_invalid_character(self.advance())
+        if is_whitespace(symbol):
+            self.advance()
+        elif symbol == "/" and self.peek_next() == "/":
+            self.line_comment()
+        elif is_ident_start(symbol):
+            self.identifier()
+        elif is_digit(symbol):
+            self.number()
+        else:
+            self.operator()
 
-    # --- Grupo 5 --- Os Continuadores
+    # --- Grupo 5 --- Um método por tipo de lexema
     def identifier(self) -> None:
         while is_ident_continue(self.peek()):
             self.advance()
 
-        # A consulta só acontece com o identificador inteiro na mão - é o que faz intx, ifx e while1 continuarem IDENT
-        self.add_token(RESERVED_WORDS.get(self.lexeme(), TokenType.IDENT))
+        self.add_token(KEYWORDS.get(self.lexeme(), TokenType.IDENT))
 
     def number(self) -> None:
         while is_digit(self.peek()):
@@ -104,6 +101,18 @@ class Lexer(Cursor):
         self.add_token(TokenType.INT_LITERAL)
 
     def line_comment(self) -> None:
-        # A quebra não é consumida: o próximo scan_token a reconhece como WHITESPACE
+        # a quebra fica de fora, o proximo scan_token trata ela como espaço
         while not self.at_end() and not is_line_break(self.peek()):
             self.advance()
+
+    def operator(self) -> None:
+        symbol = self.advance()
+
+        if symbol in ("=", "!", "<", ">"):
+            self.match("=")     # fecha ==, !=, <= e >=
+
+        if self.lexeme() in SYMBOLS:
+            self.add_token(SYMBOLS[self.lexeme()])
+        else:
+            # consumir antes de relatar garante que a varredura anda
+            self.report_invalid_character(symbol)

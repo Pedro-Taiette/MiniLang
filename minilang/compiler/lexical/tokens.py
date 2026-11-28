@@ -5,31 +5,28 @@ from enum import Enum
 
 
 class TokenType(Enum):
-    # KEYWORD_CORE e KEYWORD_EXT: reclassificam um lexema já reconhecido como IDENT_BASE
     KW_INT = "KW_INT"
+    KW_BOOL = "KW_BOOL"
     KW_PRINT = "KW_PRINT"
     KW_IF = "KW_IF"
     KW_ELSE = "KW_ELSE"
     KW_WHILE = "KW_WHILE"
-    KW_FOR = "KW_FOR"
-    KW_BOOL = "KW_BOOL"
-    KW_TRUE = "KW_TRUE"
-    KW_FALSE = "KW_FALSE"
-    KW_AND = "KW_AND"
-    KW_OR = "KW_OR"
+    KW_FOR = "KW_FOR"           # extensao: fora do escopo obrigatorio do trabalho final
 
     IDENT = "IDENT"
     INT_LITERAL = "INT_LITERAL"
+    BOOL_LITERAL = "BOOL_LITERAL"
+
+    AND = "AND"
+    OR = "OR"
 
     ASSIGN = "ASSIGN"
 
-    # ARITH_OP
     PLUS = "PLUS"
     MINUS = "MINUS"
     STAR = "STAR"
     SLASH = "SLASH"
 
-    # REL_OP
     EQUAL_EQUAL = "EQUAL_EQUAL"
     BANG_EQUAL = "BANG_EQUAL"
     LESS = "LESS"
@@ -43,11 +40,45 @@ class TokenType(Enum):
     LBRACE = "LBRACE"
     RBRACE = "RBRACE"
 
-    # Situação de fim de entrada, não classe léxica - aparece uma única vez, com lexema vazio
+    # aparece uma unica vez, com lexema vazio
     EOF = "EOF"
 
 
-# WHITESPACE e LINE_COMMENT não têm TokenType - são reconhecidos e descartados, LOgo nunca chegam à lista de tokens
+# Consultada so depois de ler o identificador inteiro: ANDx e trueValue continuam IDENT
+KEYWORDS = {
+    "int": TokenType.KW_INT,
+    "bool": TokenType.KW_BOOL,
+    "print": TokenType.KW_PRINT,
+    "if": TokenType.KW_IF,
+    "else": TokenType.KW_ELSE,
+    "while": TokenType.KW_WHILE,
+    "for": TokenType.KW_FOR,
+    "true": TokenType.BOOL_LITERAL,
+    "false": TokenType.BOOL_LITERAL,
+    "AND": TokenType.AND,
+    "OR": TokenType.OR,
+}
+
+# "!" nao esta aqui de proposito: sozinho ele e invalido, so existe em "!="
+SYMBOLS = {
+    "=": TokenType.ASSIGN,
+    "+": TokenType.PLUS,
+    "-": TokenType.MINUS,
+    "*": TokenType.STAR,
+    "/": TokenType.SLASH,
+    "==": TokenType.EQUAL_EQUAL,
+    "!=": TokenType.BANG_EQUAL,
+    "<": TokenType.LESS,
+    "<=": TokenType.LESS_EQUAL,
+    ">": TokenType.GREATER,
+    ">=": TokenType.GREATER_EQUAL,
+    "(": TokenType.LPAREN,
+    ")": TokenType.RPAREN,
+    ";": TokenType.SEMICOLON,
+    "{": TokenType.LBRACE,
+    "}": TokenType.RBRACE,
+}
+
 
 @dataclass(frozen=True)
 class Token:
@@ -57,4 +88,4 @@ class Token:
     column: int
 
     def __str__(self) -> str:
-        return f"{self.type.value}({self.lexeme!r}) em {self.line}:{self.column}"
+        return f'{self.type.value}("{self.lexeme}") {self.line}:{self.column}'

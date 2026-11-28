@@ -23,9 +23,9 @@ LINE_BREAKS = frozenset({CARRIAGE_RETURN, NEWLINE})
 # B = {ESP, TAB, CR, NL}
 WHITESPACE_CHARS = frozenset({" ", "\t"}) | LINE_BREAKS
 
-SYMBOLS = frozenset("+-*/=();") | frozenset("<>!{}")
+SYMBOL_CHARS = frozenset("+-*/=();") | frozenset("<>!{}")
 
-SOURCE_ALPHABET = LETTERS | DIGITS | {UNDERSCORE} | WHITESPACE_CHARS | SYMBOLS
+SOURCE_ALPHABET = LETTERS | DIGITS | {UNDERSCORE} | WHITESPACE_CHARS | SYMBOL_CHARS
 
 
 def is_letter(symbol: str) -> bool:

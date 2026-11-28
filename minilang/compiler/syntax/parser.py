@@ -226,7 +226,7 @@ class Parser(Cursor):
         return left
 
     def factor(self):
-        """Factor -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | KW_TRUE | KW_FALSE"""
+        """Factor -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | BOOL_LITERAL"""
         if self.check(TokenType.LPAREN):
             return self.parenthesized()
 
@@ -236,7 +236,7 @@ class Parser(Cursor):
         if self.check(TokenType.INT_LITERAL):
             return Integer(self.advance())
 
-        if self.check(TokenType.KW_TRUE) or self.check(TokenType.KW_FALSE):
+        if self.check(TokenType.BOOL_LITERAL):
             return Boolean(self.advance())
 
         raise self.error("numero, identificador ou '('")

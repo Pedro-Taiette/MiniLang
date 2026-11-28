@@ -30,8 +30,8 @@ EXPRESSIONS = [
     ("((x))", "Variavel(x)"),
     # Comparação e operadores lógicos
     ("x + 1 < 10", "Relacional(<)[Binaria(+)[Variavel(x), Inteiro(1)], Inteiro(10)]"),
-    ("a or b and c", "Binaria(or)[Variavel(a), Binaria(and)[Variavel(b), Variavel(c)]]"),
-    ("ativo and x < 10", "Binaria(and)[Variavel(ativo), Relacional(<)[Variavel(x), Inteiro(10)]]"),
+    ("a OR b AND c", "Binaria(OR)[Variavel(a), Binaria(AND)[Variavel(b), Variavel(c)]]"),
+    ("ativo AND x < 10", "Binaria(AND)[Variavel(ativo), Relacional(<)[Variavel(x), Inteiro(10)]]"),
 ]
 
 

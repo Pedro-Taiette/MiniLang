@@ -20,9 +20,9 @@ dev_note:
     Increment    -> IDENT ASSIGN Expression | empty
 
     Expression   -> Conjunction Expression'
-    Expression'  -> KW_OR Conjunction Expression' | empty
+    Expression'  -> OR Conjunction Expression' | empty
     Conjunction  -> Comparison Conjunction'
-    Conjunction' -> KW_AND Comparison Conjunction' | empty
+    Conjunction' -> AND Comparison Conjunction' | empty
     Comparison   -> Addition Comparison'
     Comparison'  -> RelOp Addition | empty
     RelOp        -> EQUAL_EQUAL | BANG_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL
@@ -30,14 +30,14 @@ dev_note:
     Addition'    -> PLUS Term Addition' | MINUS Term Addition' | empty
     Term         -> Factor Term'
     Term'        -> STAR Factor Term' | SLASH Factor Term' | empty
-    Factor       -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | KW_TRUE | KW_FALSE
+    Factor       -> LPAREN Expression RPAREN | IDENT | INT_LITERAL | BOOL_LITERAL
 """
 
 from ..lexical.tokens import TokenType
 
 # Os operadores de cada nível de expressão
-OR_OPERATORS = [TokenType.KW_OR]
-AND_OPERATORS = [TokenType.KW_AND]
+OR_OPERATORS = [TokenType.OR]
+AND_OPERATORS = [TokenType.AND]
 EQUALITY_OPERATORS = [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL]
 ORDERING_OPERATORS = [TokenType.LESS, TokenType.LESS_EQUAL, TokenType.GREATER, TokenType.GREATER_EQUAL]
 COMPARISON_OPERATORS = EQUALITY_OPERATORS + ORDERING_OPERATORS
